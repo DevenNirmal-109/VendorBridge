@@ -58,14 +58,14 @@ export const rfqSchema = z.object({
 
 // ── Quotation Validation ─────────────────────────────────────────────────────
 export const quotationItemSchema = z.object({
-  rfqItemId: z.string().uuid(),
+  rfqItemId: z.string().min(1),
   unitPrice: z.number().nonnegative('Unit price must be non-negative'),
   notes: z.string().optional().nullable(),
 });
 
 export const quotationSchema = z.object({
-  rfqId: z.string().uuid(),
-  vendorId: z.string().uuid(),
+  rfqId: z.string().min(1),
+  vendorId: z.string().min(1),
   deliveryDays: z.number().int().positive('Delivery days must be a positive number'),
   notes: z.string().optional().nullable(),
   items: z.array(quotationItemSchema).min(1, 'At least one quotation item is required'),
@@ -73,9 +73,9 @@ export const quotationSchema = z.object({
 
 // ── Approval Validation ──────────────────────────────────────────────────────
 export const approvalRequestSchema = z.object({
-  rfqId: z.string().uuid(),
-  quotationId: z.string().uuid(),
-  approverId: z.string().uuid(),
+  rfqId: z.string().min(1),
+  quotationId: z.string().min(1),
+  approverId: z.string().min(1),
 });
 
 export const approvalActionSchema = z.object({
@@ -85,7 +85,7 @@ export const approvalActionSchema = z.object({
 
 // ── Invoice Validation ───────────────────────────────────────────────────────
 export const invoiceSchema = z.object({
-  poId: z.string().uuid(),
+  poId: z.string().min(1),
   dueDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: 'Invalid due date format',
   }),

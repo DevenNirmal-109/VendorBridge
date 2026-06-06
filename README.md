@@ -46,7 +46,16 @@ vendorbridge/
 - Node.js (v18+)
 - PostgreSQL Database URL (e.g., Supabase)
 
-### 1. Backend Setup
+### Quick Start (Run Both Servers)
+Since the project is set up with NPM Workspaces, you can run both the frontend and backend simultaneously from the root directory:
+```bash
+npm install
+npm run dev
+```
+
+### Alternative: Manual Setup
+
+**1. Backend Setup**
 ```bash
 cd backend
 npm install
@@ -58,7 +67,7 @@ npm run prisma:seed
 npm run dev
 ```
 
-### 2. Frontend Setup
+**2. Frontend Setup**
 ```bash
 cd frontend
 npm install

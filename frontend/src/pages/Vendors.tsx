@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuthStore } from '../store/authStore';
 import api from '../utils/api';
 import { Plus, Search, Star, Edit, ShieldAlert, X, CheckCircle, Ban, Users } from 'lucide-react';
@@ -283,9 +284,9 @@ export const Vendors: React.FC = () => {
       )}
 
       {/* Add/Edit Modal */}
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="modal-overlay">
-          <div className="modal animate-scale-in">
+          <div className="modal modal-lg animate-scale-in">
             <div className="modal-header">
               <h3 className="text-base font-bold text-slate-800">
                 {editingVendor ? 'Edit Vendor Profile' : 'Register New Vendor'}
@@ -382,7 +383,8 @@ export const Vendors: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

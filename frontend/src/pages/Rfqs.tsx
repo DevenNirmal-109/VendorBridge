@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import api from '../utils/api';
@@ -274,7 +275,7 @@ export const Rfqs: React.FC = () => {
       )}
 
       {/* RFQ Detail Slide Drawer */}
-      {isDetailOpen && selectedRfq && (
+      {isDetailOpen && selectedRfq && createPortal(
         <div className="drawer-overlay" onClick={() => setIsDetailOpen(false)}>
           <div className="drawer animate-slide-right" onClick={(e) => e.stopPropagation()}>
             <div className="drawer-header">
@@ -402,13 +403,14 @@ export const Rfqs: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Create RFQ Modal (Procurement Only) */}
-      {isCreateModalOpen && (
+      {isCreateModalOpen && createPortal(
         <div className="modal-overlay">
-          <div className="modal modal-lg animate-scale-in">
+          <div className="modal modal-xl animate-scale-in">
             <div className="modal-header">
               <h3 className="text-base font-bold text-slate-800">Draft Request For Quotation</h3>
               <button onClick={() => setIsCreateModalOpen(false)} className="text-slate-400 hover:text-slate-600">
@@ -582,7 +584,8 @@ export const Rfqs: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

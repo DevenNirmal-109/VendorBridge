@@ -435,10 +435,9 @@ p  { font-size: 14px; font-weight: 400; color: var(--color-text); }
   background: rgba(0,0,0,0.5);
   z-index: 100;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  padding: 24px;
   backdrop-filter: blur(2px);
+  overflow-y: auto;
 }
 .modal {
   background: #fff;
@@ -446,10 +445,12 @@ p  { font-size: 14px; font-weight: 400; color: var(--color-text); }
   box-shadow: var(--shadow-modal);
   width: 100%;
   max-width: 520px;
-  max-height: 90vh;
+  margin: auto;
+  max-height: 100%;
   overflow-y: auto;
 }
 .modal-lg { max-width: 720px; }
+.modal-xl { max-width: 1024px; }
 .modal-header {
   display: flex;
   align-items: center;
@@ -726,15 +727,15 @@ p  { font-size: 14px; font-weight: 400; color: var(--color-text); }
 /* ── Animations ───────────────────────────────────────────────────────────── */
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: none; }
 }
 @keyframes slide-in-right {
   from { transform: translateX(100%); }
-  to   { transform: translateX(0); }
+  to   { transform: none; }
 }
 @keyframes scale-in {
   from { opacity: 0; transform: scale(0.95); }
-  to   { opacity: 1; transform: scale(1); }
+  to   { opacity: 1; transform: none; }
 }
 
 .animate-fade-in     { animation: fade-in 0.2s ease-out forwards; }

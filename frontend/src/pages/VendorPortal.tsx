@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../utils/api';
 import { useAuthStore } from '../store/authStore';
 import { FileText, Send, Calendar, Award, CheckCircle, Clock, X, AlertCircle } from 'lucide-react';
@@ -153,28 +154,37 @@ export const VendorPortal: React.FC = () => {
         {openBids.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {openBids.map((rfq) => (
-              <div key={rfq.id} className="card p-5 hover:shadow-md transition">
-                <div className="flex flex-col gap-3">
-                  <div className="flex justify-between items-start">
-                    <span className="text-mono font-bold text-blue-900 text-xs">{rfq.rfqNumber}</span>
-                    <span className="inline-flex items-center gap-1 text-[11px] text-red-500 font-semibold bg-red-50 px-2 py-0.5 rounded-full">
-                      <Calendar className="w-3 h-3" />
-                      Due {new Date(rfq.deadline).toLocaleDateString()}
-                    </span>
-                  </div>
+              <div key={rfq.id} className="card card-body flex flex-col justify-between min-h-[170px] hover:shadow-md transition-shadow">
+                {/* Top Row: RFQ Number & Date */}
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-sm font-bold text-blue-900 font-mono">
+                    {rfq.rfqNumber}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs text-rose-600 font-semibold bg-rose-50 px-2 py-1 rounded-full border border-rose-100/50">
+                    <Calendar className="w-3.5 h-3.5" />
+                    Due {new Date(rfq.deadline).toLocaleDateString()}
+                  </span>
+                </div>
 
-                  <h3 className="text-base font-extrabold text-slate-800">{rfq.title}</h3>
-                  <p className="text-xs text-slate-400 font-semibold uppercase">Category: {rfq.category}</p>
+                {/* Middle Row: Title */}
+                <div className="mb-6 flex-1">
+                  <h3 className="text-base font-extrabold text-slate-800 leading-snug line-clamp-2">
+                    {rfq.title}
+                  </h3>
+                </div>
 
-                  <div className="flex justify-end mt-2">
-                    <button
-                      onClick={() => handleOpenBidModal(rfq.id)}
-                      className="btn btn-primary btn-sm"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                      Submit Quotation
-                    </button>
+                {/* Bottom Row: Category & Button */}
+                <div className="flex justify-between items-end mt-auto pt-2">
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wide pb-1">
+                    CATEGORY: {rfq.category}
                   </div>
+                  <button
+                    onClick={() => handleOpenBidModal(rfq.id)}
+                    className="btn btn-primary btn-sm flex items-center gap-2"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    Submit Quotation
+                  </button>
                 </div>
               </div>
             ))}
@@ -243,9 +253,9 @@ export const VendorPortal: React.FC = () => {
       </div>
 
       {/* Submit Bid Modal */}
-      {isBidModalOpen && selectedRfq && (
+      {isBidModalOpen && selectedRfq && createPortal(
         <div className="modal-overlay">
-          <div className="modal modal-lg animate-scale-in">
+          <div className="modal modal-xl animate-scale-in">
             <div className="modal-header">
               <div className="flex flex-col">
                 <span className="text-xs text-slate-400 font-mono font-bold">Quoting for {selectedRfq.rfqNumber}</span>
@@ -353,7 +363,8 @@ export const VendorPortal: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

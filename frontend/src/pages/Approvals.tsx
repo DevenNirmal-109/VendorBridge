@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../utils/api';
 import { useAuthStore } from '../store/authStore';
 import { CheckSquare, X, ShieldCheck, ThumbsUp, ThumbsDown, Calendar, Eye, MessageSquare } from 'lucide-react';
@@ -130,9 +131,9 @@ export const Approvals: React.FC = () => {
       )}
 
       {/* Review Modal */}
-      {isDetailOpen && selectedApproval && (
+      {isDetailOpen && selectedApproval && createPortal(
         <div className="modal-overlay">
-          <div className="modal modal-lg animate-scale-in">
+          <div className="modal modal-xl animate-scale-in">
             <div className="modal-header">
               <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
                 <ShieldCheck className="w-5 h-5 text-blue-600" />
@@ -243,7 +244,8 @@ export const Approvals: React.FC = () => {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { GitPullRequest, ArrowRight, ShieldCheck, ChevronRight, Check, X, AlertTriangle } from 'lucide-react';
@@ -281,7 +282,7 @@ export const QuoteCompare: React.FC = () => {
       )}
 
       {/* Select Approver Modal */}
-      {isApprovalModalOpen && (
+      {isApprovalModalOpen && createPortal(
         <div className="modal-overlay">
           <div className="modal animate-scale-in">
             <div className="modal-header">
@@ -328,7 +329,8 @@ export const QuoteCompare: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

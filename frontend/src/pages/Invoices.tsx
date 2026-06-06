@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuthStore } from '../store/authStore';
@@ -271,9 +272,9 @@ export const Invoices: React.FC = () => {
       )}
 
       {/* Invoice Detail modal */}
-      {isDetailOpen && selectedInvoice && (
+      {isDetailOpen && selectedInvoice && createPortal(
         <div className="modal-overlay">
-          <div className="modal modal-lg animate-scale-in">
+          <div className="modal modal-xl animate-scale-in">
             <div className="modal-header">
               <div className="flex flex-col">
                 <span className="text-xs text-slate-400 font-mono font-bold">{selectedInvoice.invoiceNumber}</span>
@@ -377,11 +378,12 @@ export const Invoices: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Generate Invoice Modal (Vendor Only) */}
-      {isCreateModalOpen && (
+      {isCreateModalOpen && createPortal(
         <div className="modal-overlay">
           <div className="modal animate-scale-in">
             <div className="modal-header">
@@ -460,7 +462,8 @@ export const Invoices: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
