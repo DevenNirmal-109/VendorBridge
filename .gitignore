@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.npm/
+
+# Build
+dist/
+dist-ssr/
+build/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Backend specific
+prisma/migrations/
+*.pdf
+
+# Cache
+.eslintcache
+.vite/

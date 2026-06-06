@@ -1,0 +1,294 @@
+// VendorBridge — Full Prisma Schema
+// Converted from Backend Schema Document (Document 5 of 6)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+//  ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  admin
+  procurement
+  approver
+  vendor
+}
+
+enum VendorStatus {
+  active
+  inactive
+  blacklisted
+}
+
+enum RfqStatus {
+  draft
+  open
+  closed
+  awarded
+  cancelled
+}
+
+enum QuotationStatus {
+  draft
+  submitted
+  selected
+  rejected
+}
+
+enum ApprovalStatus {
+  pending
+  approved
+  rejected
+}
+
+enum PoStatus {
+  draft
+  issued
+  acknowledged
+  completed
+}
+
+enum InvoiceStatus {
+  draft
+  sent
+  acknowledged
+  paid
+}
+
+// ─────────────────────────────────────────────
+//  MODELS
+// ─────────────────────────────────────────────
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String   @db.VarChar(200)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users User[]
+
+  @@map("organizations")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String   @db.VarChar(100)
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  role         Role
+  orgId        String?  @map("org_id")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  org               Organization?    @relation(fields: [orgId], references: [id])
+  createdRfqs       Rfq[]            @relation("RfqCreator")
+  registeredVendors Vendor[]         @relation("VendorRegistrar")
+  requestedApprovals Approval[]      @relation("ApprovalRequester")
+  assignedApprovals  Approval[]      @relation("ApprovalAssignee")
+  createdPOs        PurchaseOrder[]  @relation("POCreator")
+  activityLogs      ActivityLog[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model Vendor {
+  id           String       @id @default(uuid())
+  name         String       @db.VarChar(200)
+  category     String       @db.VarChar(100)
+  gstNumber    String       @unique @map("gst_number") @db.VarChar(20)
+  email        String       @db.VarChar(255)
+  phone        String?      @db.VarChar(20)
+  address      String?      @db.Text
+  status       VendorStatus @default(active)
+  rating       Decimal      @default(0) @db.Decimal(3, 2)
+  registeredBy String?      @map("registered_by")
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  registrar          User?                 @relation("VendorRegistrar", fields: [registeredBy], references: [id])
+  rfqAssignments     RfqVendorAssignment[]
+  quotations         Quotation[]
+  purchaseOrders     PurchaseOrder[]
+
+  @@index([name])
+  @@index([category])
+  @@index([status])
+  @@map("vendors")
+}
+
+model Rfq {
+  id          String    @id @default(uuid())
+  rfqNumber   String    @unique @map("rfq_number") @db.VarChar(30)
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  category    String?   @db.VarChar(100)
+  deadline    DateTime
+  status      RfqStatus @default(draft)
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  creator         User                  @relation("RfqCreator", fields: [createdBy], references: [id])
+  items           RfqItem[]
+  vendorAssignments RfqVendorAssignment[]
+  quotations      Quotation[]
+  approvals       Approval[]
+
+  @@index([status])
+  @@index([category])
+  @@index([deadline])
+  @@map("rfqs")
+}
+
+model RfqItem {
+  id          String   @id @default(uuid())
+  rfqId       String   @map("rfq_id")
+  itemName    String   @map("item_name") @db.VarChar(255)
+  description String?  @db.Text
+  quantity    Decimal  @db.Decimal(10, 2)
+  unit        String?  @db.VarChar(50)
+  estPrice    Decimal? @map("est_price") @db.Decimal(12, 2)
+
+  rfq            Rfq             @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  quotationItems QuotationItem[]
+
+  @@index([rfqId])
+  @@map("rfq_items")
+}
+
+model RfqVendorAssignment {
+  id        String   @id @default(uuid())
+  rfqId     String   @map("rfq_id")
+  vendorId  String   @map("vendor_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  rfq    Rfq    @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  vendor Vendor @relation(fields: [vendorId], references: [id])
+
+  @@unique([rfqId, vendorId])
+  @@map("rfq_vendor_assignments")
+}
+
+model Quotation {
+  id           String          @id @default(uuid())
+  rfqId        String          @map("rfq_id")
+  vendorId     String          @map("vendor_id")
+  totalAmount  Decimal         @map("total_amount") @db.Decimal(14, 2)
+  deliveryDays Int             @map("delivery_days")
+  notes        String?         @db.Text
+  status       QuotationStatus @default(draft)
+  submittedAt  DateTime?       @map("submitted_at")
+  createdAt    DateTime        @default(now()) @map("created_at")
+
+  rfq      Rfq             @relation(fields: [rfqId], references: [id])
+  vendor   Vendor          @relation(fields: [vendorId], references: [id])
+  items    QuotationItem[]
+  approval Approval?
+
+  @@index([rfqId])
+  @@index([vendorId])
+  @@index([status])
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id          String   @id @default(uuid())
+  quotationId String   @map("quotation_id")
+  rfqItemId   String   @map("rfq_item_id")
+  unitPrice   Decimal  @map("unit_price") @db.Decimal(12, 2)
+  totalPrice  Decimal  @map("total_price") @db.Decimal(14, 2)
+  notes       String?  @db.Text
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  rfqItem   RfqItem   @relation(fields: [rfqItemId], references: [id])
+
+  @@index([quotationId])
+  @@map("quotation_items")
+}
+
+model Approval {
+  id            String         @id @default(uuid())
+  rfqId         String         @map("rfq_id")
+  quotationId   String         @unique @map("quotation_id")
+  requestedBy   String         @map("requested_by")
+  approverId    String         @map("approver_id")
+  status        ApprovalStatus @default(pending)
+  remarks       String?        @db.Text
+  actionedAt    DateTime?      @map("actioned_at")
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  rfq           Rfq           @relation(fields: [rfqId], references: [id])
+  quotation     Quotation     @relation(fields: [quotationId], references: [id])
+  requester     User          @relation("ApprovalRequester", fields: [requestedBy], references: [id])
+  approver      User          @relation("ApprovalAssignee", fields: [approverId], references: [id])
+  purchaseOrder PurchaseOrder?
+
+  @@index([status])
+  @@map("approvals")
+}
+
+model PurchaseOrder {
+  id          String   @id @default(uuid())
+  poNumber    String   @unique @map("po_number") @db.VarChar(30)
+  rfqId       String   @map("rfq_id")
+  vendorId    String   @map("vendor_id")
+  quotationId String   @map("quotation_id")
+  approvalId  String   @unique @map("approval_id")
+  subtotal    Decimal  @db.Decimal(14, 2)
+  gstRate     Decimal  @default(18.00) @map("gst_rate") @db.Decimal(5, 2)
+  gstAmount   Decimal  @map("gst_amount") @db.Decimal(14, 2)
+  total       Decimal  @db.Decimal(14, 2)
+  status      PoStatus @default(draft)
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  vendor   Vendor   @relation(fields: [vendorId], references: [id])
+  approval Approval @relation(fields: [approvalId], references: [id])
+  creator  User     @relation("POCreator", fields: [createdBy], references: [id])
+  invoice  Invoice?
+
+  @@index([status])
+  @@map("purchase_orders")
+}
+
+model Invoice {
+  id            String        @id @default(uuid())
+  invoiceNumber String        @unique @map("invoice_number") @db.VarChar(30)
+  poId          String        @unique @map("po_id")
+  dueDate       DateTime      @map("due_date")
+  paymentTerms  String?       @map("payment_terms") @db.VarChar(100)
+  status        InvoiceStatus @default(draft)
+  emailSentAt   DateTime?     @map("email_sent_at")
+  pdfUrl        String?       @map("pdf_url") @db.Text
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  po PurchaseOrder @relation(fields: [poId], references: [id])
+
+  @@index([status])
+  @@index([dueDate])
+  @@map("invoices")
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")
+  eventType   String   @map("event_type") @db.VarChar(60)
+  entityType  String?  @map("entity_type") @db.VarChar(60)
+  entityId    String?  @map("entity_id")
+  description String   @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([eventType])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
